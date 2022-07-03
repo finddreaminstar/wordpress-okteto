@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  annotations:
+    dev.okteto.com/auto-ingress: "true"
+spec:
+  type: ClusterIP  
+  ports:
+  - name: wordpress
+    port: 80
+    targetPort: 80
+  selector:
+    app: wordpress
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  labels: 
+    app: wordpress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  strategy:
+    type: Recreate    
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - image: okteto.dev/wordpress:5.8-fpm7.4-apache2
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: mysql
+        - name: WORDPRESS_DB_NAME
+          valueFrom:
+             secretKeyRef:
+                name: dbsecret
+                key: mysql_dbname  
+        - name: WORDPRESS_DB_USER
+          valueFrom:
+            secretKeyRef:
+                name: dbsecret
+                key: mysql_username
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+             secretKeyRef:
+                name: dbsecret
+                key: mysql_password
+        ports:
+        - containerPort: 80
+          name: wordpress
+          protocol: TCP  
+

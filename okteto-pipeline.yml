@@ -1,0 +1,5 @@
+
+deploy:
+  - okteto build -t okteto.dev/wordpress:5.8-fpm7.4-apache2
+  #- cd k8s && kustomize edit set image wordpress=okteto.dev/frontend-wordpress:5.8-fpm7.4-apache2
+  - kubectl apply -k k8s
